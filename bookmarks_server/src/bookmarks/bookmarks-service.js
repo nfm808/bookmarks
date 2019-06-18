@@ -3,3 +3,5 @@ const BookmarksService = {
     return knex.select('*').from('bookmarks')
   },
 }
+
+module.exports = BookmarksService
