@@ -22,7 +22,11 @@ describe('Bookmarks Endpoints', () => {
 
   describe('GET /bookmarks', () => {
     context('Given no bookmarks', () => {
-      
+      it('GET /bookmarks returns 200 and empty array', () => {
+        return supertest(app)
+          .get('/bookmarks')
+          .expect(200, [])
+      });
     })
 
     describe('Given there are bookmarks in the database', () => {
