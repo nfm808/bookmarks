@@ -33,7 +33,13 @@ describe('Bookmarks Endpoints', () => {
     })
 
     describe('Given there are bookmarks in the database', () => {
-      
+      const testBookmarks = makeBookmarksArray()
+
+      beforeEach('insert bookmarks', () => {
+        return db
+          .into('bookmarks')
+          .insert(testBookmarks)
+      })
     })
     
     
