@@ -58,15 +58,15 @@ bookmarksRouter
   .route('/bookmarks/:id')
   .get((req, res, next) => {
     const { id } = req.params
-    if ( !id ) {
-      logger.error(`Invalid bookmark id: ${id}`)
-      return res
-        .status(404)
-        .send(`Not a valid bookmark`)
-    }
     const knexInstance = req.app.get('db')
     BookmarksService.getBookmarkById(knexInstance, id)
       .then(bookmark => {
+        if(!bookmark) {
+          return res
+            .status(404).json({
+              error: { message: `Bookmark doesn't exist`}
+            })
+        }
         res.json(bookmark)
       })
       .catch(next)
