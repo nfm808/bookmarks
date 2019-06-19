@@ -22,7 +22,6 @@ bookmarksRouter
     const knexInstance = req.app.get('db')
     const { title, url, rating=3, description } = req.body
     const newBookmark = { title, url, description, rating }
-    console.log(newBookmark.rating)
     if (!title) {
       logger.error(`title is required`)
       return res

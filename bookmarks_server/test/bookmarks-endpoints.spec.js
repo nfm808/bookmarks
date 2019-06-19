@@ -49,37 +49,37 @@ describe('Bookmarks Endpoints', () => {
       });
     })
 
-    describe('GET /bookmarks/:bookmark_id', () => {
-      context('provided the bookmark does not exist in the database', () => {
-        it('returns 404', () => {
-          const id = 12345
-          return supertest(app)
-            .get(`/bookmarks/${id}`)
-            .set(auth)
-            .expect(404)  
-        });
-      })
-
-      context('provided there are bookmarks in the database', () => {
-        const testBookmarks = makeBookmarksArray()
-
-        beforeEach('insert bookmarks', () => {
-          return db
-            .into('bookmarks')
-            .insert(testBookmarks)
-        })
-
-        it('returns 200 and bookmark object', () => {
-          const id = 2
-          const expectedBookmark = testBookmarks[ id - 1 ]
-          return supertest(app)
-            .get(`/bookmarks/${id}`)
-            .set(auth)
-            .expect(200, expectedBookmark)
-        });
-      })
-    })    
   })
+  describe('GET /bookmarks/:bookmark_id', () => {
+    context('provided the bookmark does not exist in the database', () => {
+      it('returns 404', () => {
+        const id = 12345
+        return supertest(app)
+          .get(`/bookmarks/${id}`)
+          .set(auth)
+          .expect(404)  
+      });
+    })
+
+    context('provided there are bookmarks in the database', () => {
+      const testBookmarks = makeBookmarksArray()
+
+      beforeEach('insert bookmarks', () => {
+        return db
+          .into('bookmarks')
+          .insert(testBookmarks)
+      })
+
+      it('returns 200 and bookmark object', () => {
+        const id = 2
+        const expectedBookmark = testBookmarks[ id - 1 ]
+        return supertest(app)
+          .get(`/bookmarks/${id}`)
+          .set(auth)
+          .expect(200, expectedBookmark)
+      });
+    })
+  })    
   describe('POST /bookmarks', () => {
     it('creates a bookmark, responding with 201 and the new object', () => {
       const newBookmark = {
