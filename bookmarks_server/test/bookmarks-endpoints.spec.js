@@ -13,4 +13,23 @@ describe('Bookmarks Endpoints', () => {
     })
     app.search('db', db)
   })
+
+  after('disconnect from db', () => db.destroy())
+
+  before('clean the table', () => db('bookmarks').truncate())
+
+  afterEach('cleanup', () => db('bookmarks').truncate())
+
+  describe('GET /bookmarks', () => {
+    context('Given no bookmarks', () => {
+      
+    })
+
+    describe('Given there are bookmarks in the database', () => {
+      
+    })
+    
+    
+  })
+  
 })
