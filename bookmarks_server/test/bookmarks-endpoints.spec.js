@@ -24,7 +24,7 @@ describe('Bookmarks Endpoints', () => {
 
   describe.only('GET /bookmarks', () => {
     context('Given no bookmarks', () => {
-      it('GET /bookmarks returns 200 and empty array', () => {
+      it('returns 200 and empty array', () => {
         return supertest(app)
           .get('/bookmarks')
           .set(auth)
@@ -48,7 +48,19 @@ describe('Bookmarks Endpoints', () => {
           .expect(200, testBookmarks)
       });
     })
-    
+
+    describe('GET /bookmarks/:bookmark_id', () => {
+      context('provided there are is no bookmark', () => {
+        it('returns 404', () => {
+          const id = 12345
+          return supertest(app)
+            .get(`/bookmarks/${id}`)
+            .set(auth)
+            .expect(404)  
+        });
+      })
+      
+    })
     
   })
   

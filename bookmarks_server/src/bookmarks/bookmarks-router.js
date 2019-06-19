@@ -56,20 +56,20 @@ bookmarksRouter
 
 bookmarksRouter
   .route('/bookmarks/:id')
-  .get((req, res) => {
+  .get((req, res, next) => {
     const { id } = req.params
-
-    const bookmark = bookmarks.filter(bm => bm.id == id )
-    if ( !id || bookmark.length == 0 ) {
+    if ( !id ) {
       logger.error(`Invalid bookmark id: ${id}`)
       return res
         .status(404)
-        .send(`${id} is not a valid bookmark id`)
+        .send(`Not a valid bookmark`)
     }
-
-    return res
-      .status(200)
-      .json(bookmark)
+    const knexInstance = req.app.get('db')
+    BookmarksService.getBookmarkById(knexInstance, id)
+      .then(bookmark => {
+        res.json(bookmark)
+      })
+      .catch(next)
   })
   .delete((req, res) => {
     const { id } = req.params
