@@ -2,27 +2,31 @@ function makeBookmarksArray() {
   return [
     {
       id: 1,
-      name: 'google',
+      title: 'google',
       url: 'http://www.google.com',
-      rating: 4
+      rating: 4,
+      description: 'search baby'
     },
     {
       id: 2,
-      name: 'thinkful',
+      title: 'thinkful',
       url: 'http://www.thinkful.com',
-      rating: 5
+      rating: 5,
+      description: 'think about it'
     },
     {
       id: 3,
-      name: '/.',
+      title: '/.',
       url: 'http://slashdot.org',
-      rating: 2
+      rating: 2,
+      description: 'news for nerds'
     },
     {
       id: 4,
-      name: 'reddit',
+      title: 'reddit',
       url: 'http://www.reddit.com',
-      rating: 1
+      rating: 1,
+      description: 'a place to find community in the web'
     }
   ]
 }
