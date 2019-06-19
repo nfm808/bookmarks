@@ -32,7 +32,7 @@ describe('Bookmarks Endpoints', () => {
       });
     })
 
-    describe('Given there are bookmarks in the database', () => {
+    context('Given there are bookmarks in the database', () => {
       const testBookmarks = makeBookmarksArray()
 
       beforeEach('insert bookmarks', () => {
@@ -40,6 +40,13 @@ describe('Bookmarks Endpoints', () => {
           .into('bookmarks')
           .insert(testBookmarks)
       })
+
+      it('responds with 200 and all of the bookmarks', () => {
+        return supertest(app)
+          .get('/bookmarks')
+          .set(auth)
+          .expect(200, testBookmarks)
+      });
     })
     
     
