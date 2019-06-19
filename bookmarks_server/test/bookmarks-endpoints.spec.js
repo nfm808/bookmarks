@@ -13,7 +13,7 @@ describe('Bookmarks Endpoints', () => {
       client: 'pg',
       connection: process.env.TEST_DB_URL,
     })
-    app.search('db', db)
+    app.set('db', db)
   })
 
   after('disconnect from db', () => db.destroy())
@@ -22,7 +22,7 @@ describe('Bookmarks Endpoints', () => {
 
   afterEach('cleanup', () => db('bookmarks').truncate())
 
-  describe('GET /bookmarks', () => {
+  describe.only('GET /bookmarks', () => {
     context('Given no bookmarks', () => {
       it('GET /bookmarks returns 200 and empty array', () => {
         return supertest(app)
