@@ -6,7 +6,7 @@ const { PORT } = require('../config')
 const BookmarksService = require('./bookmarks-service')
 
 const bookmarksRouter = express.Router()
-const bodyParser = express.json()
+const jsonParser = express.json()
 
 bookmarksRouter
   .route('/bookmarks')
@@ -18,40 +18,49 @@ bookmarksRouter
         })
         .catch(next)
   })
-  .post(bodyParser, (req, res) => {
-    const { name, url, rating=3 } = req.body
-
-    if (!name) {
-      logger.error(`name is required`)
+  .post(jsonParser, (req, res, next) => {
+    const knexInstance = req.app.get('db')
+    const { title, url, rating=3, description } = req.body
+    const newBookmark = { title, url, description, rating }
+    console.log(newBookmark.rating)
+    if (!title) {
+      logger.error(`title is required`)
       return res
         .status(400)
-        .send('Must include name')
+        .json({
+         error: {message: 'Must include title'}
+        })
     }
 
     if (!url) {
       logger.error(`url is required`)
       return res
         .status(400)
-        .send('Must include URI')
-    }
-    // continue validation here...most likely with 
-    // library
-
-    const id = uuid()
-    const bookmark = {
-      id,
-      name,
-      url,
-      rating
+        .json({
+          error: {message: 'Must include url'}
+        })
     }
 
-    bookmarks.push(bookmark)
-    logger.info(`bookmark created with id: ${id} `)
-    res
-      .status(201)
-      .location(`http://localhost:${PORT}/bookmarks/${id}`)
-      .json(id)
+    if (newBookmark.rating < 1 || newBookmark.rating > 5) {
+      logger.error(`rating must be between 1 and 5`)
+      return res
+        .status(400)
+        .json({
+          error: { message: 'Rating must be between 1 and 5'}
+        })
+    }
 
+    BookmarksService.insertBookmark(
+      knexInstance,
+      newBookmark
+    )
+      .then(bookmark => {
+        res
+          .status(201)
+          .location(`/bookmarks/${bookmark.id}`)
+          .json(bookmark)
+      })
+      .catch(next)
   })
 
 bookmarksRouter
