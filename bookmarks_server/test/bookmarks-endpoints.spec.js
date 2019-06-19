@@ -3,6 +3,8 @@ const knex = require('knex')
 const app = require('../src/app')
 const { makeBookmarksArray } = require('./bookmarks.fixtures')
 
+const auth = {"Authorization": 'Bearer ' + process.env.API_TOKEN}
+
 describe('Bookmarks Endpoints', () => {
   let db
 
@@ -25,6 +27,7 @@ describe('Bookmarks Endpoints', () => {
       it('GET /bookmarks returns 200 and empty array', () => {
         return supertest(app)
           .get('/bookmarks')
+          .set(auth)
           .expect(200, [])
       });
     })
