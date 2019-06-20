@@ -63,11 +63,11 @@ bookmarksRouter
   })
 
 bookmarksRouter
-  .route('/bookmarks/:id')
+  .route('/bookmarks/:bookmark_id')
   .get((req, res, next) => {
-    const { id } = req.params
+    const { bookmark_id } = req.params
     const knexInstance = req.app.get('db')
-    BookmarksService.getBookmarkById(knexInstance, id)
+    BookmarksService.getBookmarkById(knexInstance, bookmark_id)
       .then(bookmark => {
         if(!bookmark) {
           return res
@@ -79,25 +79,23 @@ bookmarksRouter
       })
       .catch(next)
   })
-  .delete((req, res) => {
-    const { id } = req.params
-
-    const listIndex = bookmarks.findIndex(bm => bm.id == id)
-
-    if ( listIndex === -1 ) {
-      logger.error(`bookmark not found id: ${id}`)
-      return res
-        .status(404)
-        .send('Not Found')
-    }
-
-    bookmarks.splice(listIndex, 1)
-
-    logger.info(`Bookmark Id: ${id} deleted`)
-
-    res
-      .status(204)
-      .end()
+  .delete((req, res, next) => {
+    const {bookmark_id} = req.params
+    const knexInstance = req.app.get('db')
+    BookmarksService.getBookmarkById(knexInstance, bookmark_id)
+      .then(bookmark => {
+        if (!bookmark) {
+          return res
+            .status(404).json({
+              error: { message: `Bookmark doesn't exist`}
+            })
+        }
+        BookmarksService.deleteBookmarkById(knexInstance, bookmark.id)
+        .then(() => {
+          res.status(204).end()
+        })
+        .catch(next)
+      })
   })
 
 module.exports = bookmarksRouter

@@ -147,5 +147,43 @@ describe('Bookmarks Endpoints', () => {
     })
 
   })
+  describe.only('DELETE /bookmarks/:bookmark_id', () => {
+    context('Given there are no bookmarks', () => {
+      it('returns 404 and error message', () => {
+        const bookmarkId = 12345
+        return supertest(app)
+          .delete(`/bookmarks/${bookmarkId}`)
+          .set(auth)
+          .expect(404, {
+            error: { message: `Bookmark doesn't exist`}
+          })  
+      });
+    })
+    context('Given the bookmark exists', () => {
+      const testBookmarks = makeBookmarksArray()
+
+      beforeEach(() => {
+        return db
+          .into('bookmarks')
+          .insert(testBookmarks)
+      })
+      it('responds with 204', () => {
+        const idToRemove = 1
+        const expectedBookmarks = testBookmarks.filter(bookmark => bookmark.id !== idToRemove)
+        return supertest(app)
+          .delete(`/bookmarks/${idToRemove}`)
+          .set(auth)
+          .expect(204)
+          .then(res =>
+            supertest(app)
+              .get('/bookmarks')
+              .set(auth)
+              .expect(expectedBookmarks)
+            )
+      });
+    })
+    
+    
+  })
   
 })
