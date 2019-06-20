@@ -47,10 +47,69 @@ describe('Bookmarks Endpoints', () => {
           .set(auth)
           .expect(200, testBookmarks)
       });
+      
+    })
+
+    context('given an xss bookmark', () => {
+      let testBookmarks = makeBookmarksArray()
+      const maliciousBookmark = {
+        id: 911,
+        title: 'Naughty naughty very naughty <script>alert("xss");</script>',
+        url: 'Naughty naughty very naughty <script>alert("xss");</script>',
+        description: `Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.`,
+        rating: 3
+      }
+      testBookmarks.push(maliciousBookmark)
+
+      beforeEach('inject tainted array', () => {
+        return db
+          .into('bookmarks')
+          .insert(testBookmarks)
+      })
+
+      it('responds with sanitized bookmarks', () => {
+        return supertest(app)
+          .get('/bookmarks')
+          .set(auth)
+          .expect(200)
+          .expect(res => {
+            expect(res.body[4].title).to.eql('Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;')
+            expect(res.body[4].url).to.eql('Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;')
+            expect(res.body[4].description).to.eql(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`)
+           })
+      });
     })
 
   })
   describe('GET /bookmarks/:bookmark_id', () => {
+    context('Given an xss attack bookmark', () => {
+      const maliciousBookmark = {
+        id: 911,
+        title: 'Naughty naughty very naughty <script>alert("xss");</script>',
+        url: 'Naughty naughty very naughty <script>alert("xss");</script>',
+        description: `Bad image <img src="https://url.to.file.which/does-not.exist" onerror="alert(document.cookie);">. But not <strong>all</strong> bad.`,
+        rating: 3
+      }
+
+      beforeEach('insert malicious code', () => {
+        return db
+          .into('bookmarks')
+          .insert([maliciousBookmark])
+      })
+
+      it('removes xss attack content', () => {
+        return supertest(app)
+          .get(`/bookmarks/${maliciousBookmark.id}`)
+          .set(auth)
+          .expect(200)
+          .expect(res => {
+            expect(res.body.title).to.equal('Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;')
+            expect(res.body.url).to.equal('Naughty naughty very naughty &lt;script&gt;alert(\"xss\");&lt;/script&gt;')
+            expect(res.body.description).to.equal(`Bad image <img src="https://url.to.file.which/does-not.exist">. But not <strong>all</strong> bad.`)
+          })
+      });
+    })
+    
     context('provided the bookmark does not exist in the database', () => {
       it('returns 404', () => {
         const id = 12345
@@ -147,7 +206,7 @@ describe('Bookmarks Endpoints', () => {
     })
 
   })
-  describe.only('DELETE /bookmarks/:bookmark_id', () => {
+  describe('DELETE /bookmarks/:bookmark_id', () => {
     context('Given there are no bookmarks', () => {
       it('returns 404 and error message', () => {
         const bookmarkId = 12345

@@ -6,20 +6,28 @@ const BookmarksService = require('./bookmarks-service')
 const bookmarksRouter = express.Router()
 const jsonParser = express.json()
 
+const serializeBookmark = bookmark => ({
+  id: bookmark.id,
+  title: xss(bookmark.title),
+  description: !bookmark.description ? null : xss(bookmark.description),
+  url: xss(bookmark.url),
+  rating: bookmark.rating
+})
+
 bookmarksRouter
   .route('/bookmarks')
   .get((req, res, next) => {
     const knexInstance = req.app.get('db')
       BookmarksService.getAllBookmarks(knexInstance)
         .then(bookmarks => {
-          res.json(bookmarks)
+          res.json(bookmarks.map(bookmark => serializeBookmark(bookmark)))
         })
         .catch(next)
   })
   .post(jsonParser, (req, res, next) => {
     const knexInstance = req.app.get('db')
     const { title, url, rating=3, description } = req.body
-    const newBookmark = { title, url, description, rating }
+    let newBookmark = { title, url, description, rating }
     if (!title) {
       logger.error(`title is required`)
       return res
@@ -56,7 +64,7 @@ bookmarksRouter
         res
           .status(201)
           .location(`/bookmarks/${bookmark.id}`)
-          .json(bookmark)
+          .json(serializeBookmark(bookmark))
       })
       .catch(next)
   })
@@ -75,7 +83,7 @@ bookmarksRouter
               error: { message: `Bookmark doesn't exist`}
             })
         }
-        res.json(bookmark)
+        res.json(serializeBookmark(bookmark))
       })
       .catch(next)
   })
