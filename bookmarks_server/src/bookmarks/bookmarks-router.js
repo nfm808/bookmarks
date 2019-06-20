@@ -1,8 +1,6 @@
 const express = require('express')
-const uuid = require('uuid/v4')
 const logger = require('../logger')
-const bookmarks  = require('../store')
-const { PORT } = require('../config')
+const xss = require('xss')
 const BookmarksService = require('./bookmarks-service')
 
 const bookmarksRouter = express.Router()
@@ -54,6 +52,7 @@ bookmarksRouter
       newBookmark
     )
       .then(bookmark => {
+        logger.info(`bookmark created with id '${bookmark.id}'`)
         res
           .status(201)
           .location(`/bookmarks/${bookmark.id}`)
@@ -70,6 +69,7 @@ bookmarksRouter
     BookmarksService.getBookmarkById(knexInstance, bookmark_id)
       .then(bookmark => {
         if(!bookmark) {
+          logger.error(`Invalid bookmark GET request with id ${bookmark_id}`)
           return res
             .status(404).json({
               error: { message: `Bookmark doesn't exist`}
@@ -85,6 +85,7 @@ bookmarksRouter
     BookmarksService.getBookmarkById(knexInstance, bookmark_id)
       .then(bookmark => {
         if (!bookmark) {
+          logger.error(`Invalid bookmark DELETE request with id '${bookmark_id}'`)
           return res
             .status(404).json({
               error: { message: `Bookmark doesn't exist`}
