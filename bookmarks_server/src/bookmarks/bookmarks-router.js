@@ -1,7 +1,8 @@
+const path = require('path')
 const express = require('express')
 const logger = require('../logger')
 const xss = require('xss')
-const BookmarksService = require('./bookmarks-service')
+const BookmarksService = require('.//bookmarks-service')
 
 const bookmarksRouter = express.Router()
 const jsonParser = express.json()
@@ -15,7 +16,7 @@ const serializeBookmark = bookmark => ({
 })
 
 bookmarksRouter
-  .route('/bookmarks')
+  .route('/')
   .get((req, res, next) => {
     const knexInstance = req.app.get('db')
       BookmarksService.getAllBookmarks(knexInstance)
@@ -26,7 +27,7 @@ bookmarksRouter
   })
   .post(jsonParser, (req, res, next) => {
     const knexInstance = req.app.get('db')
-    const { title, url, rating=3, description } = req.body
+    const { title, url, rating, description } = req.body
     let newBookmark = { title, url, description, rating }
     if (!title) {
       logger.error(`title is required`)
@@ -63,14 +64,14 @@ bookmarksRouter
         logger.info(`bookmark created with id '${bookmark.id}'`)
         res
           .status(201)
-          .location(`/bookmarks/${bookmark.id}`)
+          .location(path.posix.join(req.originalUrl, `/${bookmark.id}`))
           .json(serializeBookmark(bookmark))
       })
       .catch(next)
   })
 
 bookmarksRouter
-  .route('/bookmarks/:bookmark_id')
+  .route('/:bookmark_id')
   .get((req, res, next) => {
     const { bookmark_id } = req.params
     const knexInstance = req.app.get('db')
@@ -104,6 +105,36 @@ bookmarksRouter
           res.status(204).end()
         })
         .catch(next)
+      })
+  })
+  .patch(jsonParser, (req, res, next) => {
+    const knexInstance = req.app.get('db')
+    const { bookmark_id } = req.params
+    const { title, url, rating, description } = req.body
+    const bookmarkToUpdate = { title, url, rating, description }
+
+    const numberOfValues = Object.values(bookmarkToUpdate).filter(Boolean).length
+    BookmarksService.getBookmarkById(knexInstance, bookmark_id)
+      .then(bookmark => {
+        if (!bookmark) {
+          return res.status(404).json({
+            error: { message: `Bookmark doesn't exist`}
+          })
+        }
+        if( numberOfValues === 0) {
+          return res.status(400).json({
+            error: { message: `Request body content must be either 'title', 'url', 'rating', or 'description'`}
+          })
+        }
+        BookmarksService.updateBookmark(
+          knexInstance,
+          bookmark_id,
+          bookmarkToUpdate
+        )
+          .then(numRowsAffected => {
+            res.status(204).end()
+          })
+          .catch(next)
       })
   })
 
