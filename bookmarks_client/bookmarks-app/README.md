@@ -1,4 +1,4 @@
 # Bookmarks React Client
-_This project is a demonstration for Thinkful's React course_
+A client with code adapted from React Course from Thinkful in learning.
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
